@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app-deployment
+  labels:
+    app: flask-app1
+spec:
+  replicas: 1  # Number of pods to run
+  selector:
+    matchLabels:
+      app: flask-app1
+  template:
+    metadata:
+      labels:
+        app: flask-app1
+    spec:
+      containers:
+      - name: flask-app1
+        image: vin1989/flask-app1-alb:1.0  # Update with your Docker image location if pushed to a repository
+        ports:
+        - containerPort: 5001
+        
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name:  alb-flask-app1-service
+  labels:
+    app: flask-app1
+  annotations:    
+    alb.ingress.kubernetes.io/healthcheck-path: /app1/check-health
+spec:
+  type: NodePort  # Default is classic LB
+  selector:
+    app: flask-app1
+  ports:
+    - protocol: TCP
+      port: 80  # External port for the LoadBalancer
+      targetPort: 5001  # The port on the Flask app container
